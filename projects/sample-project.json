@@ -1,0 +1,144 @@
+{
+  "version": "1.0",
+  "title": "Bejeweled Fishes Play-Along Demo",
+  "description": "Sample overlay project demonstrating all overlay types",
+  "fps": 24,
+  "videoWidth": 1920,
+  "videoHeight": 1080,
+  "overlays": [
+    {
+      "id": "intro_caption_1",
+      "type": "caption",
+      "content": "BEJEWELED FISHES: THE OFFICIAL PLAY-ALONG EXPERIENCE",
+      "frameStart": 24,
+      "frameEnd": 144,
+      "style": {
+        "fontSize": 36,
+        "color": "#ffffff",
+        "backgroundColor": "rgba(0, 0, 0, 0.8)",
+        "padding": 16
+      }
+    },
+    {
+      "id": "craption_example",
+      "type": "caption",
+      "content": "Fish: \"I am a fish. Blub blub.\"",
+      "frameStart": 168,
+      "frameEnd": 288,
+      "style": {
+        "fontSize": 32,
+        "fontFamily": "Comic Sans MS, cursive, sans-serif",
+        "color": "#ffff00",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 12
+      }
+    },
+    {
+      "id": "popup_fact_1",
+      "type": "popup",
+      "content": "Fun Fact: This fish is actually named Gerald. He enjoys long swims and philosophical discussions about the meaning of bubbles.",
+      "x": 100,
+      "y": 150,
+      "frameStart": 312,
+      "frameEnd": 504,
+      "pointer": {
+        "x": 300,
+        "y": 350
+      },
+      "style": {
+        "backgroundColor": "#ffeb3b",
+        "borderColor": "#000000",
+        "color": "#000000",
+        "fontSize": 14,
+        "padding": 12,
+        "maxWidth": 250
+      }
+    },
+    {
+      "id": "qte_swim_1",
+      "type": "qte",
+      "key": "SPACE",
+      "action": "swim",
+      "x": 960,
+      "y": 540,
+      "frameStart": 528,
+      "frameEnd": 624,
+      "interactive": true,
+      "style": {
+        "size": 80,
+        "backgroundColor": "#0066cc",
+        "borderColor": "#ffffff",
+        "textColor": "#ffffff",
+        "glowColor": "rgba(0, 200, 255, 0.6)"
+      }
+    },
+    {
+      "id": "ascii_fish",
+      "type": "ascii",
+      "content": " ><((('>",
+      "x": 1600,
+      "y": 100,
+      "frameStart": 648,
+      "frameEnd": 792,
+      "style": {
+        "fontSize": 48,
+        "color": "#00ffff",
+        "strokeColor": "#003333",
+        "strokeWidth": 2
+      }
+    },
+    {
+      "id": "outline_fish_1",
+      "type": "outline",
+      "points": [
+        {"x": 500, "y": 400},
+        {"x": 600, "y": 350},
+        {"x": 700, "y": 400},
+        {"x": 650, "y": 500},
+        {"x": 550, "y": 500}
+      ],
+      "frameStart": 816,
+      "frameEnd": 960,
+      "closed": true,
+      "style": {
+        "strokeColor": "#ff00ff",
+        "strokeWidth": 4,
+        "lineDash": [10, 5],
+        "fillColor": "rgba(255, 0, 255, 0.1)"
+      }
+    },
+    {
+      "id": "shape_highlight",
+      "type": "shape",
+      "shapeType": "rect",
+      "x": 800,
+      "y": 200,
+      "width": 300,
+      "height": 200,
+      "frameStart": 984,
+      "frameEnd": 1080,
+      "style": {
+        "strokeColor": "#00ff00",
+        "strokeWidth": 3,
+        "fillColor": "rgba(0, 255, 0, 0.2)"
+      }
+    },
+    {
+      "id": "text_label",
+      "type": "text",
+      "content": "LOOK AT THIS FISH",
+      "x": 850,
+      "y": 170,
+      "frameStart": 984,
+      "frameEnd": 1080,
+      "style": {
+        "fontSize": 24,
+        "fontFamily": "sans-serif",
+        "fontWeight": "bold",
+        "color": "#00ff00",
+        "strokeColor": "#000000",
+        "strokeWidth": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIVE - Gol'Nuggit Interactive Video Editor</title>
+  <link rel="stylesheet" href="src/styles/editor.css">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="editor"></div>
+
+  <script type="module">
+    import { GIVEEditor } from './src/editor/GIVEEditor.js';
+
+    // Initialize editor
+    const editor = new GIVEEditor('#editor', {
+      fps: 24,
+      debug: true
+    });
+
+    // Make editor available globally for debugging and property panel callbacks
+    window.editor = editor;
+
+    // Initialize
+    editor.init().then(() => {
+      console.log('GIVE Editor ready!');
+      console.log('');
+      console.log('Keyboard shortcuts:');
+      console.log('  V - Select tool');
+      console.log('  T - Text tool');
+      console.log('  C - Caption tool');
+      console.log('  R - Rectangle tool');
+      console.log('  O - Circle tool');
+      console.log('  P - Outline/Polygon tool (Enter to complete)');
+      console.log('  A - ASCII art tool');
+      console.log('  Q - QTE prompt tool');
+      console.log('  B - Pop-up bubble tool');
+      console.log('  G - Toggle grid');
+      console.log('  S - Toggle snap to grid');
+      console.log('  Space - Play/Pause');
+      console.log('  [ / ] - Step frame back/forward');
+      console.log('  Ctrl+Z - Undo');
+      console.log('  Ctrl+Y - Redo');
+      console.log('  Delete - Delete selected overlay');
+    });
+  </script>
+</body>
+</html>
