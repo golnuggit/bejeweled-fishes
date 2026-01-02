@@ -458,10 +458,16 @@
     import { GIVEEngine, GIVEScript } from './src/engine/index.js';
 
     // Video source - Wikimedia Commons public domain (482MB version)
-    // Using local proxy to bypass CORS - streams without downloading!
+    // For GitHub Pages: Uses local placeholder video
+    // For local dev with proxy: Streams from Wikimedia
+    const LOCAL_VIDEO = './assets/nosferatu-demo.webm';
     const DIRECT_URL = 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Nosferatu_%281922%2C_English_titles_1947%29.webm';
-    const VIDEO_URL = '/proxy/video?url=' + encodeURIComponent(DIRECT_URL);
+    const PROXY_VIDEO = '/proxy/video?url=' + encodeURIComponent(DIRECT_URL);
     const PROJECT_URL = './projects/nosferatu-demo.json';
+
+    // Detect if we're on GitHub Pages (no proxy available)
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    const VIDEO_URL = isGitHubPages ? LOCAL_VIDEO : PROXY_VIDEO;
 
     // Initialize engine
     const engine = new GIVEEngine({
