@@ -20,6 +20,24 @@ A pixel-precise, frame-accurate video overlay engine for creating interactive FM
 - **JSON Project Format**: Portable, version-controllable project files
 - **Collision Detection**: Built-in collision system for mini-game interactions
 
+## Demo
+
+Try the interactive demo featuring the 1922 public domain film **Nosferatu**:
+
+```bash
+npm run dev
+# Open http://localhost:8080/demo.html
+```
+
+The demo showcases:
+- **Parody Captions** ("Closed Craptions") with comedic reinterpretations
+- **Pop-up Facts** (VH1 Pop-Up Video style) with film trivia
+- **QTE Prompts** - Press keys to "survive" the vampire!
+- **Object Outlines** highlighting characters and shadows
+- **ASCII Art** overlays
+
+The demo auto-loads the film from Wikimedia Commons, or you can load your own video.
+
 ## Quick Start
 
 ### Running the Editor
