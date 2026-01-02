@@ -1,0 +1,540 @@
+{
+  "version": "1.0",
+  "title": "Nosferatu: The Official Play-Along Experience",
+  "description": "A GIVE demo showcasing interactive overlays on the 1922 silent film classic",
+  "fps": 24,
+  "videoWidth": 640,
+  "videoHeight": 480,
+  "videoSource": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Nosferatu_%281922%2C_English_titles_1947%29.webm",
+  "overlays": [
+    {
+      "id": "intro_title",
+      "type": "caption",
+      "content": "🦇 NOSFERATU: THE PLAY-ALONG EXPERIENCE 🦇",
+      "frameStart": 48,
+      "frameEnd": 192,
+      "style": {
+        "fontSize": 28,
+        "fontFamily": "Georgia, serif",
+        "color": "#ff0000",
+        "backgroundColor": "rgba(0, 0, 0, 0.9)",
+        "padding": 16
+      }
+    },
+    {
+      "id": "intro_instructions",
+      "type": "popup",
+      "content": "Watch for QTE prompts! Press the indicated key when you see danger approaching. Survive the night!",
+      "x": 50,
+      "y": 80,
+      "frameStart": 216,
+      "frameEnd": 408,
+      "pointer": { "x": 320, "y": 200 },
+      "style": {
+        "backgroundColor": "#ffeb3b",
+        "borderColor": "#000000",
+        "color": "#000000",
+        "fontSize": 14,
+        "padding": 12,
+        "maxWidth": 280
+      }
+    },
+    {
+      "id": "opening_craption_1",
+      "type": "caption",
+      "content": "[ dramatic silent movie music intensifies ]",
+      "frameStart": 480,
+      "frameEnd": 624,
+      "style": {
+        "fontSize": 20,
+        "fontFamily": "Comic Sans MS, cursive",
+        "color": "#ffff00",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 10
+      }
+    },
+
+    {
+      "id": "popup_fact_1",
+      "type": "popup",
+      "content": "Fun Fact: This film was an unauthorized adaptation of Dracula. Bram Stoker's widow sued and won - all copies were ordered destroyed!",
+      "x": 350,
+      "y": 50,
+      "frameStart": 720,
+      "frameEnd": 1008,
+      "pointer": { "x": 500, "y": 200 },
+      "style": {
+        "backgroundColor": "#e1bee7",
+        "borderColor": "#4a148c",
+        "color": "#000000",
+        "fontSize": 13,
+        "padding": 10,
+        "maxWidth": 240
+      }
+    },
+
+    {
+      "id": "craption_hutter_intro",
+      "type": "caption",
+      "content": "Hutter: \"Honey, I'm going on a business trip to visit a creepy castle. WCGW?\"",
+      "frameStart": 1200,
+      "frameEnd": 1440,
+      "style": {
+        "fontSize": 22,
+        "color": "#ffffff",
+        "backgroundColor": "rgba(0, 0, 0, 0.8)",
+        "padding": 12
+      }
+    },
+    {
+      "id": "ellen_response",
+      "type": "caption",
+      "content": "Ellen: \"I have a bad feeling about this... like, REALLY bad.\"",
+      "frameStart": 1464,
+      "frameEnd": 1680,
+      "style": {
+        "fontSize": 22,
+        "color": "#ffcccc",
+        "backgroundColor": "rgba(0, 0, 0, 0.8)",
+        "padding": 12
+      }
+    },
+
+    {
+      "id": "ascii_bat_1",
+      "type": "ascii",
+      "content": "  /\\___/\\\n /       \\\n|  ^   ^  |\n \\   Y   /\n  \\_____/",
+      "x": 520,
+      "y": 30,
+      "frameStart": 1800,
+      "frameEnd": 2040,
+      "style": {
+        "fontSize": 10,
+        "color": "#cc00cc",
+        "strokeColor": "#000000",
+        "strokeWidth": 1,
+        "lineHeight": 12
+      }
+    },
+
+    {
+      "id": "popup_fact_2",
+      "type": "popup",
+      "content": "The actor Max Schreck was so creepy in real life that rumors spread he was an ACTUAL vampire. (He wasn't... probably.)",
+      "x": 30,
+      "y": 300,
+      "frameStart": 2160,
+      "frameEnd": 2520,
+      "pointer": { "x": 150, "y": 240 },
+      "style": {
+        "backgroundColor": "#b3e5fc",
+        "borderColor": "#01579b",
+        "color": "#000000",
+        "fontSize": 13,
+        "padding": 10,
+        "maxWidth": 220
+      }
+    },
+
+    {
+      "id": "journey_craption",
+      "type": "caption",
+      "content": "[ Hutter vibes to his Spotify road trip playlist ]",
+      "frameStart": 2880,
+      "frameEnd": 3120,
+      "style": {
+        "fontSize": 20,
+        "fontFamily": "Comic Sans MS, cursive",
+        "color": "#00ffff",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 10
+      }
+    },
+
+    {
+      "id": "inn_warning",
+      "type": "caption",
+      "content": "Innkeeper: \"Don't go to that castle! It's full of evil!\"",
+      "frameStart": 3600,
+      "frameEnd": 3840,
+      "style": {
+        "fontSize": 22,
+        "color": "#ff9999",
+        "backgroundColor": "rgba(0, 0, 0, 0.8)",
+        "padding": 12
+      }
+    },
+    {
+      "id": "hutter_dismissive",
+      "type": "caption",
+      "content": "Hutter: \"lol ok boomer\"",
+      "frameStart": 3864,
+      "frameEnd": 4056,
+      "style": {
+        "fontSize": 24,
+        "color": "#99ff99",
+        "backgroundColor": "rgba(0, 0, 0, 0.8)",
+        "padding": 12
+      }
+    },
+
+    {
+      "id": "qte_warning_1",
+      "type": "qte",
+      "key": "X",
+      "action": "heed_warning",
+      "x": 290,
+      "y": 360,
+      "frameStart": 4080,
+      "frameEnd": 4224,
+      "interactive": true,
+      "style": {
+        "size": 60,
+        "backgroundColor": "#b71c1c",
+        "borderColor": "#ffffff",
+        "textColor": "#ffffff",
+        "glowColor": "rgba(255, 0, 0, 0.6)"
+      }
+    },
+    {
+      "id": "qte_warning_text",
+      "type": "text",
+      "content": "PRESS X TO HEED THE WARNING!",
+      "x": 180,
+      "y": 430,
+      "frameStart": 4080,
+      "frameEnd": 4224,
+      "style": {
+        "fontSize": 18,
+        "fontFamily": "sans-serif",
+        "fontWeight": "bold",
+        "color": "#ff0000",
+        "strokeColor": "#000000",
+        "strokeWidth": 3
+      }
+    },
+
+    {
+      "id": "castle_approach",
+      "type": "caption",
+      "content": "[ ominous castle appears in distance ]",
+      "frameStart": 4800,
+      "frameEnd": 5040,
+      "style": {
+        "fontSize": 20,
+        "fontFamily": "Georgia, serif",
+        "color": "#aaaaaa",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 10
+      }
+    },
+
+    {
+      "id": "popup_architecture",
+      "type": "popup",
+      "content": "The castle scenes were filmed at Orava Castle in Slovakia. It's now a popular tourist destination for vampire enthusiasts!",
+      "x": 380,
+      "y": 280,
+      "frameStart": 5280,
+      "frameEnd": 5640,
+      "pointer": { "x": 500, "y": 200 },
+      "style": {
+        "backgroundColor": "#fff9c4",
+        "borderColor": "#f9a825",
+        "color": "#000000",
+        "fontSize": 12,
+        "padding": 10,
+        "maxWidth": 220
+      }
+    },
+
+    {
+      "id": "orlok_appears",
+      "type": "caption",
+      "content": "Orlok: \"Welcome... I've been expecting you.\" *creepy hand gestures*",
+      "frameStart": 6000,
+      "frameEnd": 6336,
+      "style": {
+        "fontSize": 22,
+        "color": "#ff6666",
+        "backgroundColor": "rgba(30, 0, 0, 0.9)",
+        "padding": 12
+      }
+    },
+
+    {
+      "id": "orlok_outline",
+      "type": "outline",
+      "points": [
+        {"x": 280, "y": 80},
+        {"x": 360, "y": 80},
+        {"x": 380, "y": 120},
+        {"x": 380, "y": 280},
+        {"x": 340, "y": 320},
+        {"x": 300, "y": 320},
+        {"x": 260, "y": 280},
+        {"x": 260, "y": 120}
+      ],
+      "frameStart": 6360,
+      "frameEnd": 6600,
+      "closed": true,
+      "style": {
+        "strokeColor": "#ff0000",
+        "strokeWidth": 3,
+        "lineDash": [8, 4],
+        "fillColor": "rgba(255, 0, 0, 0.1)"
+      }
+    },
+    {
+      "id": "orlok_label",
+      "type": "text",
+      "content": "← DEFINITELY NOT SUSPICIOUS",
+      "x": 390,
+      "y": 180,
+      "frameStart": 6360,
+      "frameEnd": 6600,
+      "style": {
+        "fontSize": 16,
+        "fontFamily": "sans-serif",
+        "fontWeight": "bold",
+        "color": "#ff0000",
+        "strokeColor": "#000000",
+        "strokeWidth": 2
+      }
+    },
+
+    {
+      "id": "hands_craption",
+      "type": "caption",
+      "content": "Orlok: *has the longest fingers in cinema history*",
+      "frameStart": 6720,
+      "frameEnd": 6960,
+      "style": {
+        "fontSize": 20,
+        "fontFamily": "Comic Sans MS, cursive",
+        "color": "#cc99ff",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 10
+      }
+    },
+
+    {
+      "id": "ascii_hand",
+      "type": "ascii",
+      "content": "    ._____.\n   /       \\\n  | |     | |\n  | |     | |\n  | |     | |\n  |_|     |_|\n   \\       /\n    \\_____/",
+      "x": 30,
+      "y": 50,
+      "frameStart": 6960,
+      "frameEnd": 7200,
+      "style": {
+        "fontSize": 8,
+        "color": "#888888",
+        "strokeColor": "#000000",
+        "strokeWidth": 1,
+        "lineHeight": 9
+      }
+    },
+
+    {
+      "id": "qte_escape_1",
+      "type": "qte",
+      "key": "SPACE",
+      "action": "run_away",
+      "x": 290,
+      "y": 200,
+      "frameStart": 7440,
+      "frameEnd": 7632,
+      "interactive": true,
+      "style": {
+        "size": 70,
+        "backgroundColor": "#1a237e",
+        "borderColor": "#ffffff",
+        "textColor": "#ffffff",
+        "glowColor": "rgba(0, 100, 255, 0.6)"
+      }
+    },
+    {
+      "id": "qte_escape_text",
+      "type": "text",
+      "content": "MASH SPACE TO RUN!",
+      "x": 220,
+      "y": 285,
+      "frameStart": 7440,
+      "frameEnd": 7632,
+      "style": {
+        "fontSize": 20,
+        "fontFamily": "sans-serif",
+        "fontWeight": "bold",
+        "color": "#00ccff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3
+      }
+    },
+
+    {
+      "id": "dinner_craption",
+      "type": "caption",
+      "content": "Orlok: \"I don't eat... food.\" Hutter: \"Cool, more for me then!\"",
+      "frameStart": 8160,
+      "frameEnd": 8520,
+      "style": {
+        "fontSize": 20,
+        "color": "#ffffff",
+        "backgroundColor": "rgba(0, 0, 0, 0.8)",
+        "padding": 12
+      }
+    },
+
+    {
+      "id": "shadow_scene",
+      "type": "caption",
+      "content": "[ the most famous shot in horror cinema history ]",
+      "frameStart": 9600,
+      "frameEnd": 9840,
+      "style": {
+        "fontSize": 18,
+        "fontFamily": "Georgia, serif",
+        "fontStyle": "italic",
+        "color": "#999999",
+        "backgroundColor": "rgba(0, 0, 0, 0.9)",
+        "padding": 10
+      }
+    },
+
+    {
+      "id": "shadow_outline",
+      "type": "outline",
+      "points": [
+        {"x": 400, "y": 100},
+        {"x": 450, "y": 80},
+        {"x": 480, "y": 150},
+        {"x": 500, "y": 350},
+        {"x": 450, "y": 400},
+        {"x": 380, "y": 380},
+        {"x": 350, "y": 200}
+      ],
+      "frameStart": 9840,
+      "frameEnd": 10200,
+      "closed": true,
+      "style": {
+        "strokeColor": "#ffff00",
+        "strokeWidth": 4,
+        "fillColor": "rgba(255, 255, 0, 0.05)"
+      }
+    },
+    {
+      "id": "shadow_popup",
+      "type": "popup",
+      "content": "This shadow climbing the stairs is THE iconic horror image. Director F.W. Murnau invented German Expressionism basically just to make this one shot look cool.",
+      "x": 30,
+      "y": 50,
+      "frameStart": 9960,
+      "frameEnd": 10440,
+      "pointer": { "x": 350, "y": 250 },
+      "style": {
+        "backgroundColor": "#ffe0b2",
+        "borderColor": "#e65100",
+        "color": "#000000",
+        "fontSize": 12,
+        "padding": 10,
+        "maxWidth": 250
+      }
+    },
+
+    {
+      "id": "qte_survive",
+      "type": "qte",
+      "key": "S",
+      "action": "survive",
+      "x": 290,
+      "y": 200,
+      "frameStart": 10560,
+      "frameEnd": 10800,
+      "interactive": true,
+      "style": {
+        "size": 80,
+        "backgroundColor": "#4a148c",
+        "borderColor": "#e1bee7",
+        "textColor": "#ffffff",
+        "glowColor": "rgba(200, 0, 255, 0.6)"
+      }
+    },
+    {
+      "id": "qte_survive_text",
+      "type": "text",
+      "content": "PRESS S TO SURVIVE THE NIGHT!",
+      "x": 160,
+      "y": 300,
+      "frameStart": 10560,
+      "frameEnd": 10800,
+      "style": {
+        "fontSize": 22,
+        "fontFamily": "sans-serif",
+        "fontWeight": "bold",
+        "color": "#cc66ff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3
+      }
+    },
+
+    {
+      "id": "sunrise_craption",
+      "type": "caption",
+      "content": "[ sunrise = vampire's worst enemy, besides garlic bread ]",
+      "frameStart": 11040,
+      "frameEnd": 11280,
+      "style": {
+        "fontSize": 20,
+        "fontFamily": "Comic Sans MS, cursive",
+        "color": "#ffcc00",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 10
+      }
+    },
+
+    {
+      "id": "ascii_sun",
+      "type": "ascii",
+      "content": "    \\   |   /\n     \\  |  /\n   ----===----\n     /  |  \\\n    /   |   \\",
+      "x": 500,
+      "y": 30,
+      "frameStart": 11280,
+      "frameEnd": 11520,
+      "style": {
+        "fontSize": 12,
+        "color": "#ffff00",
+        "strokeColor": "#ff6600",
+        "strokeWidth": 1,
+        "lineHeight": 14
+      }
+    },
+
+    {
+      "id": "ending_title",
+      "type": "caption",
+      "content": "Thanks for playing NOSFERATU: THE PLAY-ALONG EXPERIENCE!",
+      "frameStart": 11760,
+      "frameEnd": 12000,
+      "style": {
+        "fontSize": 24,
+        "fontFamily": "Georgia, serif",
+        "color": "#ff0000",
+        "backgroundColor": "rgba(0, 0, 0, 0.9)",
+        "padding": 16
+      }
+    },
+    {
+      "id": "credits",
+      "type": "caption",
+      "content": "A Gol'Nuggit Productions Demo • Powered by GIVE Engine",
+      "frameStart": 12024,
+      "frameEnd": 12264,
+      "style": {
+        "fontSize": 18,
+        "color": "#aaaaaa",
+        "backgroundColor": "rgba(0, 0, 0, 0.85)",
+        "padding": 12
+      }
+    }
+  ]
+}
