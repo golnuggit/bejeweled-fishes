@@ -1,0 +1,19 @@
+{
+  "name": "give-editor",
+  "version": "0.1.0",
+  "description": "Gol'Nuggit Interactive Video Editor - Frame-precise overlay engine for interactive FMV games",
+  "main": "src/engine/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server . -p 8080 -c-1",
+    "start": "npx http-server . -p 8080 -c-1"
+  },
+  "keywords": [
+    "fmv",
+    "video-overlay",
+    "interactive-video",
+    "game-engine"
+  ],
+  "author": "Gol'Nuggit Productions",
+  "license": "MIT"
+}
