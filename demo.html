@@ -457,8 +457,10 @@
   <script type="module">
     import { GIVEEngine, GIVEScript } from './src/engine/index.js';
 
-    // Video source - Wikimedia Commons public domain
-    const VIDEO_URL = 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Nosferatu_%281922%2C_English_titles_1947%29.webm';
+    // Video source - Wikimedia Commons public domain (482MB version)
+    // Using local proxy to bypass CORS - streams without downloading!
+    const DIRECT_URL = 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Nosferatu_%281922%2C_English_titles_1947%29.webm';
+    const VIDEO_URL = '/proxy/video?url=' + encodeURIComponent(DIRECT_URL);
     const PROJECT_URL = './projects/nosferatu-demo.json';
 
     // Initialize engine
