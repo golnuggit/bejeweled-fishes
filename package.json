@@ -5,8 +5,9 @@
   "main": "src/engine/index.js",
   "type": "module",
   "scripts": {
-    "dev": "npx http-server . -p 8080 -c-1",
-    "start": "npx http-server . -p 8080 -c-1"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "static": "npx http-server . -p 8080 -c-1"
   },
   "keywords": [
     "fmv",
