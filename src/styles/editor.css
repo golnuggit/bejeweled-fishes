@@ -465,6 +465,260 @@
   font-size: 14px;
 }
 
+/* Range display */
+.give-range-display {
+  color: var(--give-success);
+  font-weight: 500;
+}
+
+/* Textbox container */
+.give-textbox-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Draggable text box */
+.give-textbox {
+  position: absolute;
+  min-width: 150px;
+  min-height: 40px;
+  padding: 8px 12px;
+  background: rgba(10, 10, 10, 0.9);
+  border: 2px solid var(--give-accent);
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: move;
+  pointer-events: auto;
+  outline: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.give-textbox:focus {
+  border-color: var(--give-success);
+  box-shadow: 0 0 0 2px rgba(0, 204, 102, 0.3), 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.give-textbox.dragging {
+  opacity: 0.8;
+  cursor: grabbing;
+}
+
+.give-textbox-resize {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 12px;
+  height: 12px;
+  background: var(--give-accent);
+  border-radius: 2px;
+  cursor: se-resize;
+}
+
+/* AI Modal */
+.give-ai-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.give-ai-modal-content {
+  width: 500px;
+  max-width: 90%;
+  background: var(--give-bg-medium);
+  border-radius: 8px;
+  border: 1px solid var(--give-border);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.give-ai-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--give-bg-light);
+  border-bottom: 1px solid var(--give-border);
+}
+
+.give-ai-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--give-accent);
+}
+
+.give-ai-modal-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--give-text-dim);
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.give-ai-modal-close:hover {
+  background: var(--give-danger);
+  color: white;
+}
+
+.give-ai-modal-body {
+  padding: 20px;
+}
+
+.give-ai-range-info {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--give-bg-dark);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.give-ai-range-label {
+  color: var(--give-text-dim);
+}
+
+.give-ai-range-value {
+  color: var(--give-success);
+  font-weight: 500;
+}
+
+.give-ai-prompt-group {
+  margin-bottom: 16px;
+}
+
+.give-ai-prompt-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--give-text);
+}
+
+.give-ai-prompt-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--give-border);
+  border-radius: 4px;
+  background: var(--give-bg-dark);
+  color: var(--give-text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.give-ai-prompt-input:focus {
+  outline: none;
+  border-color: var(--give-accent);
+}
+
+.give-ai-prompt-input::placeholder {
+  color: var(--give-text-dim);
+}
+
+.give-ai-options {
+  margin-bottom: 8px;
+}
+
+.give-ai-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--give-text);
+  cursor: pointer;
+}
+
+.give-ai-options input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--give-accent);
+}
+
+.give-ai-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--give-bg-light);
+  border-top: 1px solid var(--give-border);
+}
+
+.give-ai-cancel-btn,
+.give-ai-generate-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.give-ai-cancel-btn {
+  background: var(--give-bg-dark);
+  color: var(--give-text);
+}
+
+.give-ai-cancel-btn:hover {
+  background: var(--give-border);
+}
+
+.give-ai-generate-btn {
+  background: var(--give-accent);
+  color: white;
+}
+
+.give-ai-generate-btn:hover {
+  background: var(--give-accent-hover);
+}
+
+/* AI Button styling */
+.give-ai-btn {
+  background: linear-gradient(135deg, #00aaff, #00cc66) !important;
+  color: white !important;
+  font-weight: 500;
+}
+
+.give-ai-btn:disabled {
+  background: var(--give-bg-light) !important;
+  color: var(--give-text-dim) !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.give-ai-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, #33bbff, #33dd88) !important;
+}
+
+/* Terminal tool button */
+.give-tool-btn[data-tool="terminal"] {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  font-weight: bold;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .give-properties {
