@@ -450,6 +450,67 @@ export class GIVEScript {
   }
 
   /**
+   * Add an arrow overlay with animated drawing
+   * @param {Object} startPoint - Start point {x, y}
+   * @param {Object} endPoint - End point {x, y}
+   * @param {number|string} frameStart - Start frame or timecode
+   * @param {Object} options - Additional options
+   * @param {Object} options.controlPoint - Quadratic bezier control point
+   * @param {Object} options.controlPoint1 - Cubic bezier first control point
+   * @param {Object} options.controlPoint2 - Cubic bezier second control point
+   * @param {number} options.animationFrames - Frames for draw animation (default: 24)
+   * @param {boolean} options.arrowHeadFilled - Fill the arrow head (default: false)
+   */
+  arrow(startPoint, endPoint, frameStart, options = {}) {
+    const startFrame = typeof frameStart === 'string' ? this.timecodeToFrame(frameStart) : frameStart;
+    const duration = options.duration || 2;
+    const endFrame = options.frameEnd || startFrame + this.secondsToFrames(duration);
+
+    return this.engine.addOverlay({
+      type: 'arrow',
+      startPoint,
+      endPoint,
+      controlPoint: options.controlPoint,
+      controlPoint1: options.controlPoint1,
+      controlPoint2: options.controlPoint2,
+      frameStart: startFrame,
+      frameEnd: endFrame,
+      style: {
+        strokeColor: options.color || options.strokeColor || '#ffffff',
+        lineWidth: options.lineWidth || options.strokeWidth || 3,
+        lineDash: options.lineDash || [],
+        glowColor: options.glowColor,
+        glowBlur: options.glowBlur || 10,
+        animated: options.animated !== false,
+        animationFrames: options.animationFrames || 24,
+        arrowHeadLength: options.arrowHeadLength,
+        arrowHeadAngle: options.arrowHeadAngle,
+        arrowHeadFilled: options.arrowHeadFilled || false,
+        lineCap: options.lineCap || 'round',
+        lineJoin: options.lineJoin || 'round',
+        ...options.style
+      }
+    });
+  }
+
+  /**
+   * Add a line overlay (arrow without arrowhead)
+   * @param {Object} startPoint - Start point {x, y}
+   * @param {Object} endPoint - End point {x, y}
+   * @param {number|string} frameStart - Start frame or timecode
+   * @param {Object} options - Additional options
+   */
+  line(startPoint, endPoint, frameStart, options = {}) {
+    return this.arrow(startPoint, endPoint, frameStart, {
+      ...options,
+      style: {
+        arrowHead: false,
+        ...options.style
+      }
+    });
+  }
+
+  /**
    * Load overlays from a script definition object
    * @param {Object} script - Script definition
    */
@@ -506,6 +567,10 @@ export class GIVEScript {
         return this.terminalText(def.content, def.x, def.y, def.frameStart, def);
       case 'matrix_text':
         return this.matrixText(def.content, def.x, def.y, def.frameStart, def);
+      case 'arrow':
+        return this.arrow(def.startPoint, def.endPoint, def.frameStart, def);
+      case 'line':
+        return this.line(def.startPoint, def.endPoint, def.frameStart, def);
       default:
         // Raw overlay - pass through
         return this.engine.addOverlay(def);

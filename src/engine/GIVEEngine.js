@@ -38,6 +38,21 @@ export class GIVEEngine {
     // Collision system
     this.collisionAreas = [];
 
+    // Object tracking system
+    this.trackedObjects = new Map(); // id -> { keyframes: [...], startFrame, endFrame }
+
+    // CRT/Scanline effects
+    this.effects = {
+      scanlines: options.scanlines || false,
+      scanlineOpacity: options.scanlineOpacity || 0.15,
+      scanlineSpacing: options.scanlineSpacing || 2,
+      flicker: options.flicker || false,
+      flickerIntensity: options.flickerIntensity || 0.02,
+      crtCurvature: options.crtCurvature || false,
+      vignette: options.vignette || false,
+      vignetteIntensity: options.vignetteIntensity || 0.3
+    };
+
     // Bind methods
     this.renderLoop = this.renderLoop.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -297,6 +312,9 @@ export class GIVEEngine {
       this.renderOverlay(overlay);
     }
 
+    // Apply CRT/scanline effects
+    this.renderEffects();
+
     // Update collision areas
     this.updateCollisionAreas();
   }
@@ -308,6 +326,19 @@ export class GIVEEngine {
   renderOverlay(overlay) {
     const ctx = this.ctx;
     ctx.save();
+
+    // If overlay is attached to a tracked object, update position
+    if (overlay.trackId) {
+      const bounds = this.getTrackedBounds(overlay.trackId, this.currentFrame);
+      if (bounds) {
+        overlay.x = bounds.x + (overlay.trackOffset?.x || 0);
+        overlay.y = bounds.y + (overlay.trackOffset?.y || 0);
+        if (overlay.trackSize) {
+          overlay.width = bounds.width;
+          overlay.height = bounds.height;
+        }
+      }
+    }
 
     // Apply overlay-specific transforms if any
     if (overlay.transform) {
@@ -344,6 +375,10 @@ export class GIVEEngine {
         break;
       case 'terminal_text':
         this.renderTerminalText(overlay);
+        break;
+      case 'arrow':
+      case 'line':
+        this.renderArrow(overlay);
         break;
       default:
         if (this.config.debug) {
@@ -811,7 +846,230 @@ export class GIVEEngine {
       }
     }
 
+    // Per-overlay scanlines effect (CRT style)
+    if (style.scanlines) {
+      const scanlineOpacity = style.scanlineOpacity || 0.1;
+      const scanlineSpacing = style.scanlineSpacing || 2;
+      ctx.fillStyle = `rgba(0, 0, 0, ${scanlineOpacity})`;
+
+      for (let y = overlay.y; y < overlay.y + boxHeight; y += scanlineSpacing * 2) {
+        ctx.fillRect(overlay.x, y, boxWidth, scanlineSpacing);
+      }
+    }
+
     ctx.restore();
+  }
+
+  /**
+   * Render arrow/line overlay with animated drawing effect
+   * Supports straight lines, quadratic bezier, and cubic bezier curves
+   */
+  renderArrow(overlay) {
+    const ctx = this.ctx;
+    const style = overlay.style || {};
+
+    const startPoint = overlay.startPoint || { x: 0, y: 0 };
+    const endPoint = overlay.endPoint || { x: 100, y: 100 };
+    const showArrowHead = overlay.type === 'arrow' || style.arrowHead !== false;
+
+    // Colors and styling
+    const strokeColor = style.strokeColor || style.color || '#ffffff';
+    const lineWidth = style.lineWidth || style.strokeWidth || 3;
+    const lineDash = style.lineDash || [];
+    const glowColor = style.glowColor;
+
+    // Animated drawing effect (like typewriter for lines)
+    let drawProgress = 1.0;
+    if (style.animated !== false) {
+      const framesElapsed = this.currentFrame - overlay.frameStart;
+      const animationFrames = style.animationFrames || 24; // Default 1 second at 24fps
+      drawProgress = Math.min(1.0, framesElapsed / animationFrames);
+    }
+
+    // Calculate current end point based on progress
+    let currentEnd;
+    if (overlay.controlPoint1 && overlay.controlPoint2) {
+      // Cubic bezier
+      currentEnd = this.bezierPoint(
+        startPoint,
+        overlay.controlPoint1,
+        overlay.controlPoint2,
+        endPoint,
+        drawProgress
+      );
+    } else if (overlay.controlPoint) {
+      // Quadratic bezier
+      currentEnd = this.quadraticBezierPoint(
+        startPoint,
+        overlay.controlPoint,
+        endPoint,
+        drawProgress
+      );
+    } else {
+      // Straight line
+      currentEnd = {
+        x: startPoint.x + (endPoint.x - startPoint.x) * drawProgress,
+        y: startPoint.y + (endPoint.y - startPoint.y) * drawProgress
+      };
+    }
+
+    // Draw glow effect if specified
+    if (glowColor) {
+      ctx.save();
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = style.glowBlur || 10;
+      this.drawLinePath(ctx, startPoint, currentEnd, overlay, drawProgress);
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = lineWidth;
+      ctx.setLineDash(lineDash);
+      ctx.lineCap = style.lineCap || 'round';
+      ctx.lineJoin = style.lineJoin || 'round';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Draw main line
+    ctx.save();
+    this.drawLinePath(ctx, startPoint, currentEnd, overlay, drawProgress);
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = lineWidth;
+    ctx.setLineDash(lineDash);
+    ctx.lineCap = style.lineCap || 'round';
+    ctx.lineJoin = style.lineJoin || 'round';
+    ctx.stroke();
+
+    // Draw arrow head if enabled and progress is complete enough
+    if (showArrowHead && drawProgress > 0.1) {
+      this.drawArrowHead(ctx, startPoint, currentEnd, overlay, strokeColor, lineWidth);
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Draw the line/curve path
+   */
+  drawLinePath(ctx, startPoint, endPoint, overlay, progress) {
+    ctx.beginPath();
+    ctx.moveTo(startPoint.x, startPoint.y);
+
+    if (overlay.controlPoint1 && overlay.controlPoint2) {
+      // Cubic bezier - draw partial curve
+      this.drawPartialCubicBezier(ctx, startPoint, overlay.controlPoint1, overlay.controlPoint2, overlay.endPoint, progress);
+    } else if (overlay.controlPoint) {
+      // Quadratic bezier - draw partial curve
+      this.drawPartialQuadraticBezier(ctx, startPoint, overlay.controlPoint, overlay.endPoint, progress);
+    } else {
+      // Straight line
+      ctx.lineTo(endPoint.x, endPoint.y);
+    }
+  }
+
+  /**
+   * Draw partial quadratic bezier curve
+   */
+  drawPartialQuadraticBezier(ctx, start, control, end, t) {
+    const steps = Math.ceil(t * 20);
+    for (let i = 1; i <= steps; i++) {
+      const progress = (i / 20) * (t <= 1 ? t : 1);
+      const point = this.quadraticBezierPoint(start, control, end, progress);
+      ctx.lineTo(point.x, point.y);
+    }
+  }
+
+  /**
+   * Draw partial cubic bezier curve
+   */
+  drawPartialCubicBezier(ctx, start, cp1, cp2, end, t) {
+    const steps = Math.ceil(t * 30);
+    for (let i = 1; i <= steps; i++) {
+      const progress = (i / 30) * (t <= 1 ? t : 1);
+      const point = this.bezierPoint(start, cp1, cp2, end, progress);
+      ctx.lineTo(point.x, point.y);
+    }
+  }
+
+  /**
+   * Calculate point on quadratic bezier curve
+   */
+  quadraticBezierPoint(start, control, end, t) {
+    const x = (1 - t) * (1 - t) * start.x + 2 * (1 - t) * t * control.x + t * t * end.x;
+    const y = (1 - t) * (1 - t) * start.y + 2 * (1 - t) * t * control.y + t * t * end.y;
+    return { x, y };
+  }
+
+  /**
+   * Calculate point on cubic bezier curve
+   */
+  bezierPoint(start, cp1, cp2, end, t) {
+    const x = Math.pow(1 - t, 3) * start.x +
+              3 * Math.pow(1 - t, 2) * t * cp1.x +
+              3 * (1 - t) * Math.pow(t, 2) * cp2.x +
+              Math.pow(t, 3) * end.x;
+    const y = Math.pow(1 - t, 3) * start.y +
+              3 * Math.pow(1 - t, 2) * t * cp1.y +
+              3 * (1 - t) * Math.pow(t, 2) * cp2.y +
+              Math.pow(t, 3) * end.y;
+    return { x, y };
+  }
+
+  /**
+   * Draw arrow head at the end of the line
+   */
+  drawArrowHead(ctx, startPoint, endPoint, overlay, color, lineWidth) {
+    const style = overlay.style || {};
+    const headLength = style.arrowHeadLength || lineWidth * 4;
+    const headAngle = style.arrowHeadAngle || Math.PI / 6; // 30 degrees
+
+    // Calculate angle of the line at the end
+    let angle;
+    if (overlay.controlPoint1 && overlay.controlPoint2) {
+      // For cubic bezier, calculate tangent at end
+      const t = 0.99;
+      const nearEnd = this.bezierPoint(startPoint, overlay.controlPoint1, overlay.controlPoint2, overlay.endPoint, t);
+      angle = Math.atan2(endPoint.y - nearEnd.y, endPoint.x - nearEnd.x);
+    } else if (overlay.controlPoint) {
+      // For quadratic bezier, calculate tangent at end
+      const t = 0.99;
+      const nearEnd = this.quadraticBezierPoint(startPoint, overlay.controlPoint, overlay.endPoint, t);
+      angle = Math.atan2(endPoint.y - nearEnd.y, endPoint.x - nearEnd.x);
+    } else {
+      // Straight line
+      angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+    }
+
+    // Draw arrow head
+    ctx.beginPath();
+    ctx.moveTo(endPoint.x, endPoint.y);
+    ctx.lineTo(
+      endPoint.x - headLength * Math.cos(angle - headAngle),
+      endPoint.y - headLength * Math.sin(angle - headAngle)
+    );
+    ctx.moveTo(endPoint.x, endPoint.y);
+    ctx.lineTo(
+      endPoint.x - headLength * Math.cos(angle + headAngle),
+      endPoint.y - headLength * Math.sin(angle + headAngle)
+    );
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+
+    // Optionally fill arrow head
+    if (style.arrowHeadFilled) {
+      ctx.beginPath();
+      ctx.moveTo(endPoint.x, endPoint.y);
+      ctx.lineTo(
+        endPoint.x - headLength * Math.cos(angle - headAngle),
+        endPoint.y - headLength * Math.sin(angle - headAngle)
+      );
+      ctx.lineTo(
+        endPoint.x - headLength * Math.cos(angle + headAngle),
+        endPoint.y - headLength * Math.sin(angle + headAngle)
+      );
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
   }
 
   /**
@@ -829,6 +1087,88 @@ export class GIVEEngine {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
+  }
+
+  /**
+   * Toggle scanline effect
+   * @param {boolean} enabled - Enable or disable scanlines
+   */
+  setScanlines(enabled) {
+    this.effects.scanlines = enabled;
+    this.render();
+  }
+
+  /**
+   * Toggle flicker effect
+   * @param {boolean} enabled - Enable or disable flicker
+   */
+  setFlicker(enabled) {
+    this.effects.flicker = enabled;
+    this.render();
+  }
+
+  /**
+   * Toggle vignette effect
+   * @param {boolean} enabled - Enable or disable vignette
+   */
+  setVignette(enabled) {
+    this.effects.vignette = enabled;
+    this.render();
+  }
+
+  /**
+   * Configure all CRT effects at once
+   * @param {Object} effectsConfig - Effects configuration
+   */
+  setEffects(effectsConfig) {
+    Object.assign(this.effects, effectsConfig);
+    this.render();
+  }
+
+  /**
+   * Render post-processing effects (scanlines, flicker, vignette)
+   */
+  renderEffects() {
+    if (!this.ctx) return;
+
+    const ctx = this.ctx;
+    const width = this.videoWidth;
+    const height = this.videoHeight;
+
+    // Apply flicker effect (random brightness variation)
+    if (this.effects.flicker) {
+      const flickerAmount = (Math.random() - 0.5) * this.effects.flickerIntensity;
+      ctx.fillStyle = flickerAmount > 0
+        ? `rgba(255, 255, 255, ${Math.abs(flickerAmount)})`
+        : `rgba(0, 0, 0, ${Math.abs(flickerAmount)})`;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    // Draw scanlines
+    if (this.effects.scanlines) {
+      ctx.save();
+      ctx.fillStyle = `rgba(0, 0, 0, ${this.effects.scanlineOpacity})`;
+
+      const spacing = this.effects.scanlineSpacing;
+      for (let y = 0; y < height; y += spacing * 2) {
+        ctx.fillRect(0, y, width, spacing);
+      }
+      ctx.restore();
+    }
+
+    // Draw vignette (darkened corners)
+    if (this.effects.vignette) {
+      const gradient = ctx.createRadialGradient(
+        width / 2, height / 2, 0,
+        width / 2, height / 2, Math.max(width, height) * 0.7
+      );
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
+      gradient.addColorStop(1, `rgba(0, 0, 0, ${this.effects.vignetteIntensity})`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
   }
 
   /**
@@ -947,6 +1287,130 @@ export class GIVEEngine {
   }
 
   /**
+   * Create a tracked object for position/size interpolation across frames
+   * @param {string} id - Unique identifier for the tracked object
+   * @param {number} startFrame - First frame of tracking
+   * @param {number} endFrame - Last frame of tracking
+   * @param {Object} initialBounds - Initial bounding box {x, y, width, height}
+   * @returns {string} The tracked object ID
+   */
+  trackObject(id, startFrame, endFrame, initialBounds) {
+    if (!id) {
+      id = `track_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    this.trackedObjects.set(id, {
+      id,
+      startFrame,
+      endFrame,
+      keyframes: [{
+        frame: startFrame,
+        bounds: { ...initialBounds }
+      }]
+    });
+
+    if (this.config.debug) {
+      console.log(`[GIVE] Created tracked object: ${id} (frames ${startFrame}-${endFrame})`);
+    }
+
+    return id;
+  }
+
+  /**
+   * Add a keyframe to a tracked object
+   * @param {string} trackId - Tracked object ID
+   * @param {number} frame - Frame number for the keyframe
+   * @param {Object} bounds - Bounding box at this frame {x, y, width, height}
+   */
+  addKeyframe(trackId, frame, bounds) {
+    const track = this.trackedObjects.get(trackId);
+    if (!track) {
+      console.warn(`[GIVE] Tracked object not found: ${trackId}`);
+      return;
+    }
+
+    // Remove existing keyframe at this frame if any
+    track.keyframes = track.keyframes.filter(kf => kf.frame !== frame);
+
+    // Add new keyframe and sort by frame
+    track.keyframes.push({ frame, bounds: { ...bounds } });
+    track.keyframes.sort((a, b) => a.frame - b.frame);
+
+    if (this.config.debug) {
+      console.log(`[GIVE] Added keyframe to ${trackId} at frame ${frame}`);
+    }
+  }
+
+  /**
+   * Get interpolated bounds for a tracked object at a specific frame
+   * Uses linear interpolation between keyframes
+   * @param {string} trackId - Tracked object ID
+   * @param {number} frame - Frame number to get bounds for
+   * @returns {Object|null} Interpolated bounds {x, y, width, height} or null
+   */
+  getTrackedBounds(trackId, frame) {
+    const track = this.trackedObjects.get(trackId);
+    if (!track || track.keyframes.length === 0) {
+      return null;
+    }
+
+    // Outside tracking range
+    if (frame < track.startFrame || frame > track.endFrame) {
+      return null;
+    }
+
+    const keyframes = track.keyframes;
+
+    // Before first keyframe - use first keyframe bounds
+    if (frame <= keyframes[0].frame) {
+      return { ...keyframes[0].bounds };
+    }
+
+    // After last keyframe - use last keyframe bounds
+    if (frame >= keyframes[keyframes.length - 1].frame) {
+      return { ...keyframes[keyframes.length - 1].bounds };
+    }
+
+    // Find surrounding keyframes for interpolation
+    let prevKf = keyframes[0];
+    let nextKf = keyframes[keyframes.length - 1];
+
+    for (let i = 0; i < keyframes.length - 1; i++) {
+      if (keyframes[i].frame <= frame && keyframes[i + 1].frame >= frame) {
+        prevKf = keyframes[i];
+        nextKf = keyframes[i + 1];
+        break;
+      }
+    }
+
+    // Linear interpolation
+    const t = (frame - prevKf.frame) / (nextKf.frame - prevKf.frame);
+
+    return {
+      x: prevKf.bounds.x + (nextKf.bounds.x - prevKf.bounds.x) * t,
+      y: prevKf.bounds.y + (nextKf.bounds.y - prevKf.bounds.y) * t,
+      width: prevKf.bounds.width + (nextKf.bounds.width - prevKf.bounds.width) * t,
+      height: prevKf.bounds.height + (nextKf.bounds.height - prevKf.bounds.height) * t
+    };
+  }
+
+  /**
+   * Remove a tracked object
+   * @param {string} trackId - Tracked object ID to remove
+   */
+  removeTrackedObject(trackId) {
+    this.trackedObjects.delete(trackId);
+  }
+
+  /**
+   * Get all tracked objects
+   * @returns {Array} Array of tracked object definitions
+   */
+  getTrackedObjects() {
+    return Array.from(this.trackedObjects.values());
+  }
+
+  /**
    * Load overlay project from JSON
    * @param {Object|string} project - Project data or JSON string
    */
@@ -960,10 +1424,19 @@ export class GIVEEngine {
     }
 
     this.overlays = project.overlays || [];
+
+    // Load tracked objects if present
+    this.trackedObjects.clear();
+    if (project.trackedObjects) {
+      for (const track of project.trackedObjects) {
+        this.trackedObjects.set(track.id, track);
+      }
+    }
+
     this.render();
 
     if (this.config.debug) {
-      console.log(`[GIVE] Loaded project with ${this.overlays.length} overlays`);
+      console.log(`[GIVE] Loaded project with ${this.overlays.length} overlays, ${this.trackedObjects.size} tracked objects`);
     }
   }
 
@@ -982,7 +1455,8 @@ export class GIVEEngine {
         // Remove runtime properties
         const { imageElement, ...clean } = o;
         return clean;
-      })
+      }),
+      trackedObjects: this.getTrackedObjects()
     };
   }
 
@@ -1004,6 +1478,7 @@ export class GIVEEngine {
 
     this.overlays = [];
     this.collisionAreas = [];
+    this.trackedObjects.clear();
   }
 }
 

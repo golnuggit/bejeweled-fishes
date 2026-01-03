@@ -598,6 +598,45 @@
         "backgroundColor": "rgba(0, 0, 0, 0.85)",
         "padding": 12
       }
+    },
+
+    {
+      "id": "arrow_demo",
+      "type": "arrow",
+      "startPoint": { "x": 100, "y": 300 },
+      "endPoint": { "x": 400, "y": 150 },
+      "controlPoint": { "x": 250, "y": 100 },
+      "frameStart": 500,
+      "frameEnd": 620,
+      "style": {
+        "strokeColor": "#ffff00",
+        "lineWidth": 4,
+        "glowColor": "rgba(255, 255, 0, 0.5)",
+        "animated": true,
+        "animationFrames": 36,
+        "arrowHeadFilled": true
+      }
+    },
+    {
+      "id": "scanline_terminal",
+      "type": "terminal_text",
+      "content": "SCANLINE MODE ACTIVE\n-------------------\nRetro CRT effect enabled\nfor authentic vintage look",
+      "x": 400,
+      "y": 320,
+      "frameStart": 550,
+      "frameEnd": 700,
+      "style": {
+        "fontSize": 12,
+        "color": "#00ff41",
+        "backgroundColor": "rgba(0, 0, 0, 0.95)",
+        "charsPerFrame": 1,
+        "typewriter": true,
+        "showCursor": true,
+        "padding": 10,
+        "scanlines": true,
+        "scanlineOpacity": 0.15,
+        "scanlineSpacing": 2
+      }
     }
   ]
 }
