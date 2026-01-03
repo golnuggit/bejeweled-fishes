@@ -851,3 +851,48 @@
 .give-ai-discard-btn:hover {
   background: var(--give-border);
 }
+
+/* CLI Status Indicator */
+.give-ai-cli-status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.give-ai-cli-status.checking {
+  background: var(--give-bg-light);
+  color: var(--give-text-dim);
+}
+
+.give-ai-cli-status.available {
+  background: rgba(0, 204, 102, 0.15);
+  color: var(--give-success);
+}
+
+.give-ai-cli-status.unavailable {
+  background: rgba(255, 170, 0, 0.15);
+  color: var(--give-warning);
+}
+
+.give-ai-cli-status.error {
+  background: rgba(255, 68, 68, 0.15);
+  color: var(--give-danger);
+}
+
+.give-ai-cli-status .cli-ok {
+  color: var(--give-success);
+  font-weight: bold;
+}
+
+.give-ai-cli-status .cli-warn {
+  color: var(--give-warning);
+  font-weight: bold;
+}
+
+.give-ai-cli-status small {
+  display: block;
+  margin-top: 4px;
+  color: var(--give-text-dim);
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+}

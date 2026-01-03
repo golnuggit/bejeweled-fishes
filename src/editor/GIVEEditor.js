@@ -265,7 +265,12 @@ export class GIVEEditor {
                   <input type="checkbox" class="give-ai-terminal-style" checked>
                   Use terminal text style
                 </label>
+                <label>
+                  <input type="checkbox" class="give-ai-use-cli">
+                  Use Claude CLI (Max subscription - no API cost)
+                </label>
               </div>
+              <div class="give-ai-cli-status"></div>
               <div class="give-ai-status" style="display:none;"></div>
               <div class="give-ai-preview" style="display:none;"></div>
             </div>
@@ -641,6 +646,44 @@ export class GIVEEditor {
       modal.style.display = 'flex';
       const promptInput = this.editorContainer.querySelector('.give-ai-prompt-input');
       if (promptInput) promptInput.focus();
+
+      // Check CLI availability
+      this.checkCLIStatus();
+    }
+  }
+
+  /**
+   * Check Claude CLI availability and update UI
+   */
+  async checkCLIStatus() {
+    const statusEl = this.editorContainer.querySelector('.give-ai-cli-status');
+    const cliCheckbox = this.editorContainer.querySelector('.give-ai-use-cli');
+
+    if (!statusEl) return;
+
+    statusEl.textContent = 'Checking Claude CLI...';
+    statusEl.className = 'give-ai-cli-status checking';
+
+    try {
+      const response = await fetch('/api/cli-status');
+      const status = await response.json();
+
+      if (status.available) {
+        statusEl.innerHTML = `<span class="cli-ok">&#10003; Claude CLI ready</span> (${status.version || 'authenticated'})`;
+        statusEl.className = 'give-ai-cli-status available';
+        if (cliCheckbox) cliCheckbox.checked = true;
+      } else {
+        statusEl.innerHTML = `<span class="cli-warn">&#9888; Claude CLI not available</span><br><small>${status.error || 'Run: npm i -g @anthropic-ai/claude-code && claude login'}</small>`;
+        statusEl.className = 'give-ai-cli-status unavailable';
+        if (cliCheckbox) {
+          cliCheckbox.checked = false;
+          cliCheckbox.disabled = true;
+        }
+      }
+    } catch (err) {
+      statusEl.textContent = 'CLI status check failed (server offline?)';
+      statusEl.className = 'give-ai-cli-status error';
+      if (cliCheckbox) cliCheckbox.disabled = true;
     }
   }
 
@@ -660,6 +703,7 @@ export class GIVEEditor {
     const generateBtn = this.editorContainer.querySelector('.give-ai-generate-btn');
     const previewArea = this.editorContainer.querySelector('.give-ai-preview');
     const statusEl = this.editorContainer.querySelector('.give-ai-status');
+    const useCLI = this.editorContainer.querySelector('.give-ai-use-cli')?.checked;
 
     if (!promptInput || !promptInput.value.trim()) {
       alert('Please enter a prompt');
@@ -678,19 +722,22 @@ export class GIVEEditor {
       );
     }
 
+    // Configure CLI mode
+    this.aiGenerator.useCLI = useCLI;
+
     // Show loading state
     if (generateBtn) {
       generateBtn.disabled = true;
       generateBtn.textContent = 'Generating...';
     }
     if (statusEl) {
-      statusEl.textContent = 'Analyzing prompt...';
+      statusEl.textContent = useCLI ? 'Using Claude CLI (Max subscription)...' : 'Analyzing prompt...';
       statusEl.style.display = 'block';
     }
 
     try {
-      // Generate overlays
-      const overlays = await this.aiGenerator.generate(prompt, this.selectedRange);
+      // Generate overlays (useAI: true forces AI generation even for simple prompts)
+      const overlays = await this.aiGenerator.generate(prompt, this.selectedRange, { useAI: useCLI });
 
       if (overlays.length === 0) {
         if (statusEl) statusEl.textContent = 'No overlays generated. Try a different prompt.';
@@ -723,6 +770,7 @@ export class GIVEEditor {
 
     const messages = {
       'parsing': 'Parsing prompt...',
+      'calling_cli': 'Calling Claude CLI (using Max subscription)...',
       'calling_api': 'Calling AI API...',
       'fallback': 'Using local generation...',
       'complete': 'Generation complete!',

@@ -1,11 +1,16 @@
 /**
  * AI Overlay Generator
  *
- * Uses Claude API to generate overlay specifications from natural language prompts.
+ * Uses Claude API or Claude Code CLI to generate overlay specifications from natural language prompts.
  * Parses prompts like:
  *   - "add arrows pointing to the fish" -> generates arrow overlays
  *   - "matrix text rain effect from 100-200" -> generates terminal_text overlays
  *   - "add a QTE to press X when danger appears" -> generates QTE overlay
+ *
+ * Generation modes:
+ * 1. Local parsing - Fast, no external calls, handles common patterns
+ * 2. CLI mode - Uses Claude Code CLI (requires claude CLI installed + Max subscription)
+ * 3. API mode - Direct HTTP API calls (requires API key)
  */
 
 export class AIOverlayGenerator {
@@ -13,7 +18,9 @@ export class AIOverlayGenerator {
     // API configuration
     this.apiKey = options.apiKey || null;
     this.apiEndpoint = options.apiEndpoint || '/api/generate';
+    this.cliEndpoint = options.cliEndpoint || '/api/cli-generate'; // Server endpoint for CLI
     this.model = options.model || 'claude-sonnet-4-20250514';
+    this.useCLI = options.useCLI !== false; // Default to CLI mode when available
 
     // Video context
     this.videoWidth = options.videoWidth || 640;
@@ -43,23 +50,44 @@ export class AIOverlayGenerator {
    * Generate overlays from a natural language prompt
    * @param {string} prompt - User's natural language prompt
    * @param {Object} frameRange - Optional {start, end} frame range
+   * @param {Object} options - Generation options (useAI: boolean)
    * @returns {Promise<Array>} Array of overlay objects
    */
-  async generate(prompt, frameRange = null) {
+  async generate(prompt, frameRange = null, options = {}) {
     this.isGenerating = true;
     this.lastError = null;
     this.updateStatus('parsing');
 
+    const forceAI = options.useAI === true;
+
     try {
-      // First, try local parsing for common patterns
-      const localResult = this.parseLocally(prompt, frameRange);
-      if (localResult.length > 0) {
-        this.updateStatus('complete');
-        this.isGenerating = false;
-        return localResult;
+      // First, try local parsing for common patterns (unless AI is forced)
+      if (!forceAI) {
+        const localResult = this.parseLocally(prompt, frameRange);
+        if (localResult.length > 0) {
+          this.updateStatus('complete');
+          this.isGenerating = false;
+          return localResult;
+        }
       }
 
-      // If API key is available, use Claude for complex prompts
+      // Try CLI mode first (uses Claude Max subscription - no API costs!)
+      if (this.useCLI) {
+        this.updateStatus('calling_cli');
+        try {
+          const cliResult = await this.callClaudeCLI(prompt, frameRange);
+          if (cliResult.length > 0) {
+            this.updateStatus('complete');
+            this.isGenerating = false;
+            return cliResult;
+          }
+        } catch (cliError) {
+          console.warn('[AIOverlayGenerator] CLI mode failed:', cliError.message);
+          // Fall through to other methods
+        }
+      }
+
+      // If API key is available, use Claude API for complex prompts
       if (this.apiKey) {
         this.updateStatus('calling_api');
         const apiResult = await this.callClaudeAPI(prompt, frameRange);
@@ -82,6 +110,36 @@ export class AIOverlayGenerator {
       console.error('[AIOverlayGenerator] Error:', error);
       return [];
     }
+  }
+
+  /**
+   * Call the Claude Code CLI via server endpoint
+   * Uses the user's Claude Max subscription (no API costs!)
+   */
+  async callClaudeCLI(prompt, frameRange) {
+    const response = await fetch(this.cliEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt,
+        context: {
+          width: this.videoWidth,
+          height: this.videoHeight,
+          fps: this.fps,
+          frameRange: frameRange
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || `CLI endpoint error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.overlays || [];
   }
 
   /**

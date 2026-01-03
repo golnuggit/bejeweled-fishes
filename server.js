@@ -13,6 +13,10 @@ import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { ClaudeCodeBridge } from './src/cli/ClaudeCodeBridge.js';
+
+// Initialize Claude Code CLI bridge
+const claudeBridge = new ClaudeCodeBridge({ debug: true });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8080;
@@ -106,6 +110,62 @@ const server = http.createServer(async (req, res) => {
       console.error('URL parse error:', err.message);
       res.writeHead(400, { 'Content-Type': 'text/plain' });
       res.end('Invalid URL');
+    }
+    return;
+  }
+
+  // Handle CLI-based AI overlay generation
+  if (url.pathname === '/api/cli-generate' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', async () => {
+      try {
+        const { prompt, context } = JSON.parse(body);
+
+        if (!prompt) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing prompt parameter' }));
+          return;
+        }
+
+        console.log(`[CLI Generate] Prompt: "${prompt.substring(0, 50)}..."`);
+
+        // Check if CLI is available
+        const availability = await claudeBridge.checkAvailability();
+        if (!availability.available) {
+          res.writeHead(503, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            error: 'Claude CLI not available',
+            details: availability.error,
+            setup: 'Install with: npm install -g @anthropic-ai/claude-code && claude login'
+          }));
+          return;
+        }
+
+        // Generate overlays
+        const overlays = await claudeBridge.generate(prompt, context);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ overlays, source: 'claude-cli' }));
+
+      } catch (err) {
+        console.error('[CLI Generate] Error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // Check CLI availability endpoint
+  if (url.pathname === '/api/cli-status' && req.method === 'GET') {
+    try {
+      const status = await claudeBridge.checkAvailability();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(status));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ available: false, error: err.message }));
     }
     return;
   }
