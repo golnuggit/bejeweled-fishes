@@ -345,6 +345,86 @@ export class GIVEScript {
   }
 
   /**
+   * Add a terminal-style text overlay with typewriter effect
+   * Matrix-inspired monospace rendering with character-by-character reveal
+   * @param {string} text - Text content
+   * @param {number} x - X position in pixels
+   * @param {number} y - Y position in pixels
+   * @param {number|string} frameStart - Start frame or timecode
+   * @param {Object} options - Additional options
+   * @param {number} options.duration - Duration in seconds (default: calculated from text length)
+   * @param {number} options.charsPerFrame - Characters revealed per frame (default: 0.5)
+   * @param {boolean} options.typewriter - Enable typewriter effect (default: true)
+   * @param {number} options.typewriterDelay - Frames to wait before starting (default: 0)
+   * @param {boolean} options.showCursor - Show blinking cursor during typing (default: true)
+   * @param {boolean} options.showStaticCursor - Show blinking cursor after completion (default: false)
+   * @param {boolean} options.showBackground - Show translucent background (default: true)
+   */
+  terminalText(text, x, y, frameStart, options = {}) {
+    const startFrame = typeof frameStart === 'string' ? this.timecodeToFrame(frameStart) : frameStart;
+    const charsPerFrame = options.charsPerFrame || 0.5;
+
+    // Calculate duration: enough time for all characters plus a pause
+    let duration;
+    if (options.duration) {
+      duration = options.duration;
+    } else {
+      const typingFrames = Math.ceil(text.length / charsPerFrame);
+      const pauseFrames = this.engine.config.fps; // 1 second pause after typing
+      duration = (typingFrames + pauseFrames) / this.engine.config.fps;
+    }
+    const endFrame = options.frameEnd || startFrame + this.secondsToFrames(duration);
+
+    return this.engine.addOverlay({
+      type: 'terminal_text',
+      content: text,
+      x,
+      y,
+      frameStart: startFrame,
+      frameEnd: endFrame,
+      style: {
+        fontSize: options.fontSize || 16,
+        fontFamily: options.fontFamily || "'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', 'Monaco', 'Consolas', 'Courier New', monospace",
+        fontWeight: options.fontWeight || 'normal',
+        color: options.color || '#ffffff',
+        backgroundColor: options.backgroundColor || 'rgba(10, 10, 10, 0.85)',
+        glowColor: options.glowColor || 'rgba(255, 255, 255, 0.15)',
+        cursorColor: options.cursorColor || '#ffffff',
+        padding: options.padding || 8,
+        borderRadius: options.borderRadius || 2,
+        borderColor: options.borderColor,
+        borderWidth: options.borderWidth,
+        strokeColor: options.strokeColor,
+        strokeWidth: options.strokeWidth,
+        lineHeight: options.lineHeight,
+        charWidth: options.charWidth,
+        charsPerFrame: charsPerFrame,
+        typewriter: options.typewriter !== false,
+        typewriterDelay: options.typewriterDelay || 0,
+        showCursor: options.showCursor !== false,
+        showStaticCursor: options.showStaticCursor || false,
+        showBackground: options.showBackground !== false,
+        glow: options.glow !== false,
+        ...options.style
+      }
+    });
+  }
+
+  /**
+   * Add a Matrix-green terminal text overlay
+   * Convenience method with green Matrix-style colors
+   */
+  matrixText(text, x, y, frameStart, options = {}) {
+    return this.terminalText(text, x, y, frameStart, {
+      color: '#00ff41',
+      glowColor: 'rgba(0, 255, 65, 0.3)',
+      cursorColor: '#00ff41',
+      backgroundColor: 'rgba(0, 0, 0, 0.9)',
+      ...options
+    });
+  }
+
+  /**
    * Add an image overlay
    * @param {string} src - Image source URL
    * @param {number} x - X position
@@ -422,6 +502,10 @@ export class GIVEScript {
         return this.circle(def.x, def.y, def.width, def.height, def.frameStart, def);
       case 'image':
         return this.image(def.src, def.x, def.y, def.frameStart, def);
+      case 'terminal_text':
+        return this.terminalText(def.content, def.x, def.y, def.frameStart, def);
+      case 'matrix_text':
+        return this.matrixText(def.content, def.x, def.y, def.frameStart, def);
       default:
         // Raw overlay - pass through
         return this.engine.addOverlay(def);

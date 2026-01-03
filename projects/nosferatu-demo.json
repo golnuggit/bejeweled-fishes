@@ -8,9 +8,29 @@
   "videoSource": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Nosferatu_%281922%2C_English_titles_1947%29.webm",
   "overlays": [
     {
+      "id": "terminal_boot",
+      "type": "terminal_text",
+      "content": "GIVE ENGINE v1.0 INITIALIZED\n> Loading Nosferatu (1922)...\n> Overlay system: ACTIVE\n> QTE prompts: ENABLED",
+      "x": 20,
+      "y": 20,
+      "frameStart": 0,
+      "frameEnd": 96,
+      "style": {
+        "fontSize": 14,
+        "color": "#00ff41",
+        "backgroundColor": "rgba(0, 0, 0, 0.95)",
+        "glowColor": "rgba(0, 255, 65, 0.3)",
+        "cursorColor": "#00ff41",
+        "charsPerFrame": 1.5,
+        "typewriter": true,
+        "showCursor": true,
+        "padding": 12
+      }
+    },
+    {
       "id": "intro_title",
       "type": "caption",
-      "content": "🦇 NOSFERATU: THE PLAY-ALONG EXPERIENCE 🦇",
+      "content": "NOSFERATU: THE PLAY-ALONG EXPERIENCE",
       "frameStart": 48,
       "frameEnd": 192,
       "style": {
@@ -248,6 +268,26 @@
       }
     },
 
+    {
+      "id": "threat_analysis",
+      "type": "terminal_text",
+      "content": "THREAT DETECTED\n--------------\nSubject: Count Orlok\nStatus: EXTREMELY SUSPICIOUS\nDanger Level: ████████░░ 80%",
+      "x": 420,
+      "y": 20,
+      "frameStart": 5900,
+      "frameEnd": 6200,
+      "style": {
+        "fontSize": 12,
+        "color": "#ff3333",
+        "backgroundColor": "rgba(0, 0, 0, 0.9)",
+        "glowColor": "rgba(255, 0, 0, 0.2)",
+        "cursorColor": "#ff3333",
+        "charsPerFrame": 0.8,
+        "typewriter": true,
+        "showCursor": true,
+        "padding": 10
+      }
+    },
     {
       "id": "orlok_appears",
       "type": "caption",
@@ -509,6 +549,29 @@
       }
     },
 
+    {
+      "id": "system_status",
+      "type": "terminal_text",
+      "content": "SESSION COMPLETE\n================\nVampire Status: DEFEATED\nSurvival Rate: 100%\nThank you for playing.",
+      "x": 180,
+      "y": 150,
+      "frameStart": 11600,
+      "frameEnd": 11900,
+      "style": {
+        "fontSize": 18,
+        "color": "#ffffff",
+        "backgroundColor": "rgba(10, 10, 10, 0.95)",
+        "glowColor": "rgba(255, 255, 255, 0.2)",
+        "cursorColor": "#ffffff",
+        "charsPerFrame": 0.6,
+        "typewriter": true,
+        "showCursor": true,
+        "showStaticCursor": true,
+        "padding": 16,
+        "borderColor": "rgba(255, 255, 255, 0.3)",
+        "borderWidth": 1
+      }
+    },
     {
       "id": "ending_title",
       "type": "caption",

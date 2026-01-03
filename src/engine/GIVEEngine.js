@@ -342,6 +342,9 @@ export class GIVEEngine {
       case 'image':
         this.renderImage(overlay);
         break;
+      case 'terminal_text':
+        this.renderTerminalText(overlay);
+        break;
       default:
         if (this.config.debug) {
           console.warn(`[GIVE] Unknown overlay type: ${overlay.type}`);
@@ -672,6 +675,160 @@ export class GIVEEngine {
       overlay.width || overlay.imageElement.naturalWidth,
       overlay.height || overlay.imageElement.naturalHeight
     );
+  }
+
+  /**
+   * Render terminal-style text with typewriter effect
+   * Matrix-inspired monospace rendering with character-by-character reveal
+   */
+  renderTerminalText(overlay) {
+    const ctx = this.ctx;
+    const style = overlay.style || {};
+
+    // Terminal font settings
+    const fontSize = style.fontSize || 16;
+    const fontFamily = style.fontFamily || "'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', 'Monaco', 'Consolas', 'Courier New', monospace";
+    const lineHeight = style.lineHeight || fontSize * 1.4;
+    const charWidth = style.charWidth || fontSize * 0.6; // Approximate monospace char width
+    const padding = style.padding || 8;
+
+    // Colors
+    const textColor = style.color || '#ffffff';
+    const bgColor = style.backgroundColor || 'rgba(10, 10, 10, 0.85)';
+    const glowColor = style.glowColor || 'rgba(255, 255, 255, 0.15)';
+    const cursorColor = style.cursorColor || '#ffffff';
+
+    // Typewriter effect: calculate how many characters to show
+    const content = overlay.content || '';
+    const framesElapsed = this.currentFrame - overlay.frameStart;
+    const charsPerFrame = style.charsPerFrame || 0.5; // Characters revealed per frame
+    const typewriterDelay = style.typewriterDelay || 0; // Frames to wait before starting
+
+    let visibleChars;
+    if (style.typewriter === false) {
+      // No typewriter effect, show all text immediately
+      visibleChars = content.length;
+    } else {
+      // Calculate visible characters based on elapsed frames
+      const typingFrames = Math.max(0, framesElapsed - typewriterDelay);
+      visibleChars = Math.min(content.length, Math.floor(typingFrames * charsPerFrame));
+    }
+
+    const visibleText = content.substring(0, visibleChars);
+    const lines = visibleText.split('\n');
+
+    // Set font
+    ctx.font = `${style.fontWeight || 'normal'} ${fontSize}px ${fontFamily}`;
+    ctx.textBaseline = 'top';
+
+    // Measure text for background
+    let maxLineWidth = 0;
+    for (const line of content.split('\n')) {
+      const metrics = ctx.measureText(line);
+      maxLineWidth = Math.max(maxLineWidth, metrics.width);
+    }
+    const totalLines = content.split('\n').length;
+    const boxWidth = maxLineWidth + padding * 2;
+    const boxHeight = totalLines * lineHeight + padding * 2;
+
+    // Draw translucent background
+    if (style.showBackground !== false) {
+      ctx.fillStyle = bgColor;
+
+      // Rounded corners if specified
+      const borderRadius = style.borderRadius || 2;
+      this.drawRoundedRect(ctx, overlay.x, overlay.y, boxWidth, boxHeight, borderRadius);
+      ctx.fill();
+
+      // Border
+      if (style.borderColor) {
+        ctx.strokeStyle = style.borderColor;
+        ctx.lineWidth = style.borderWidth || 1;
+        ctx.stroke();
+      } else {
+        // Subtle default border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    // Render text with glow effect
+    ctx.save();
+
+    // Disable font smoothing for crisp pixels (browser support varies)
+    // This is mainly for the visual effect
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineY = overlay.y + padding + i * lineHeight;
+      const lineText = lines[i];
+
+      // Text glow/shadow for terminal effect
+      if (style.glow !== false) {
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 2;
+      }
+
+      // Stroke for extra visibility if specified
+      if (style.strokeColor) {
+        ctx.strokeStyle = style.strokeColor;
+        ctx.lineWidth = style.strokeWidth || 1;
+        ctx.strokeText(lineText, overlay.x + padding, lineY);
+      }
+
+      // Main text fill
+      ctx.fillStyle = textColor;
+      ctx.fillText(lineText, overlay.x + padding, lineY);
+    }
+
+    // Draw blinking cursor if typewriter is active and not complete
+    if (style.typewriter !== false && visibleChars < content.length && style.showCursor !== false) {
+      const cursorBlink = Math.floor(Date.now() / 500) % 2 === 0; // Blink every 500ms
+
+      if (cursorBlink) {
+        // Calculate cursor position
+        const lastLineIndex = lines.length - 1;
+        const lastLine = lines[lastLineIndex] || '';
+        const cursorX = overlay.x + padding + ctx.measureText(lastLine).width + 2;
+        const cursorY = overlay.y + padding + lastLineIndex * lineHeight;
+
+        ctx.fillStyle = cursorColor;
+        ctx.fillRect(cursorX, cursorY, charWidth * 0.6, fontSize * 1.1);
+      }
+    }
+
+    // Static cursor after typewriter completes (optional)
+    if (style.showStaticCursor && visibleChars >= content.length) {
+      const lastLineIndex = lines.length - 1;
+      const lastLine = lines[lastLineIndex] || '';
+      const cursorX = overlay.x + padding + ctx.measureText(lastLine).width + 2;
+      const cursorY = overlay.y + padding + lastLineIndex * lineHeight;
+
+      const cursorBlink = Math.floor(Date.now() / 500) % 2 === 0;
+      if (cursorBlink) {
+        ctx.fillStyle = cursorColor;
+        ctx.fillRect(cursorX, cursorY, charWidth * 0.6, fontSize * 1.1);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Helper: Draw a rounded rectangle path
+   */
+  drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
   }
 
   /**

@@ -1,0 +1,254 @@
+/**
+ * GIVE Terminal Aesthetic
+ * Matrix-inspired visual style with crisp monospace text
+ */
+
+/* Import pixel-perfect monospace fonts */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap');
+
+:root {
+  /* Terminal color palette */
+  --terminal-bg: #0a0a0a;
+  --terminal-bg-translucent: rgba(10, 10, 10, 0.85);
+  --terminal-text: #ffffff;
+  --terminal-text-dim: #888888;
+  --terminal-text-bright: #ffffff;
+  --terminal-glow: rgba(255, 255, 255, 0.15);
+  --terminal-cursor: #ffffff;
+  --terminal-selection: rgba(255, 255, 255, 0.2);
+
+  /* Matrix green variant (for optional use) */
+  --matrix-green: #00ff41;
+  --matrix-green-dim: #008f11;
+  --matrix-green-glow: rgba(0, 255, 65, 0.3);
+
+  /* Font settings */
+  --terminal-font: 'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
+  --terminal-font-size: 16px;
+  --terminal-line-height: 1.4;
+  --terminal-letter-spacing: 0px;
+
+  /* Character dimensions for pixel-precise positioning */
+  --char-width: 9.6px;  /* Approximate for 16px JetBrains Mono */
+  --char-height: 22.4px; /* line-height * font-size */
+}
+
+/* Base terminal text styling */
+.terminal-text {
+  font-family: var(--terminal-font);
+  font-size: var(--terminal-font-size);
+  line-height: var(--terminal-line-height);
+  letter-spacing: var(--terminal-letter-spacing);
+  color: var(--terminal-text);
+  background: var(--terminal-bg-translucent);
+  padding: 8px 12px;
+  border-radius: 2px;
+
+  /* Crisp text rendering */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+  text-rendering: geometricPrecision;
+
+  /* Subtle glow effect */
+  text-shadow: 0 0 1px var(--terminal-glow);
+
+  /* Box styling */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+/* Typewriter cursor */
+.terminal-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  background: var(--terminal-cursor);
+  margin-left: 2px;
+  animation: terminal-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes terminal-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Typewriter animation for character reveal */
+.terminal-typewriter {
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.terminal-typewriter .char {
+  opacity: 0;
+  animation: char-appear 0.05s forwards;
+}
+
+@keyframes char-appear {
+  to { opacity: 1; }
+}
+
+/* Scanline overlay effect (optional) */
+.terminal-scanlines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+}
+
+/* CRT flicker effect (subtle) */
+.terminal-flicker {
+  animation: terminal-flicker 0.15s infinite;
+}
+
+@keyframes terminal-flicker {
+  0% { opacity: 0.97; }
+  50% { opacity: 1; }
+  100% { opacity: 0.98; }
+}
+
+/* Matrix-style text (green variant) */
+.terminal-text.matrix {
+  color: var(--matrix-green);
+  text-shadow:
+    0 0 2px var(--matrix-green),
+    0 0 10px var(--matrix-green-glow);
+  border-color: var(--matrix-green-dim);
+}
+
+/* Bright/emphasized text */
+.terminal-text.bright {
+  color: var(--terminal-text-bright);
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.5),
+    0 0 8px var(--terminal-glow);
+  font-weight: 700;
+}
+
+/* Dim/secondary text */
+.terminal-text.dim {
+  color: var(--terminal-text-dim);
+  text-shadow: none;
+}
+
+/* No background variant (text only) */
+.terminal-text.no-bg {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Editable text box styling */
+.terminal-edit-box {
+  font-family: var(--terminal-font);
+  font-size: var(--terminal-font-size);
+  line-height: var(--terminal-line-height);
+  color: var(--terminal-text);
+  background: var(--terminal-bg);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  padding: 8px 12px;
+  min-width: 100px;
+  min-height: 1.5em;
+  resize: both;
+  overflow: auto;
+
+  /* Crisp rendering */
+  -webkit-font-smoothing: none;
+  text-rendering: geometricPrecision;
+
+  /* Cursor */
+  caret-color: var(--terminal-cursor);
+
+  /* Focus state */
+  outline: none;
+}
+
+.terminal-edit-box:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.terminal-edit-box::selection {
+  background: var(--terminal-selection);
+}
+
+/* Draggable handle */
+.terminal-edit-box-wrapper {
+  position: absolute;
+  cursor: move;
+}
+
+.terminal-edit-box-wrapper.editing {
+  cursor: text;
+}
+
+.terminal-edit-box-wrapper .drag-handle {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 10px;
+  color: var(--terminal-text-dim);
+}
+
+.terminal-edit-box-wrapper .drag-handle::before {
+  content: '⋮⋮';
+  letter-spacing: 2px;
+}
+
+.terminal-edit-box-wrapper .close-btn {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.terminal-edit-box-wrapper .close-btn:hover {
+  opacity: 1;
+}
+
+/* Frame range indicator */
+.terminal-frame-range {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  font-family: var(--terminal-font);
+  font-size: 10px;
+  color: var(--terminal-text-dim);
+  white-space: nowrap;
+}
+
+/* Coordinate display */
+.terminal-coords {
+  position: absolute;
+  top: -18px;
+  right: 0;
+  font-family: var(--terminal-font);
+  font-size: 10px;
+  color: var(--terminal-text-dim);
+  white-space: nowrap;
+}
