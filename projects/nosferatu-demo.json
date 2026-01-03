@@ -637,6 +637,110 @@
         "scanlineOpacity": 0.15,
         "scanlineSpacing": 2
       }
+    },
+
+    {
+      "id": "cubic_bezier_arrow",
+      "type": "arrow",
+      "startPoint": { "x": 50, "y": 200 },
+      "endPoint": { "x": 350, "y": 400 },
+      "controlPoint1": { "x": 100, "y": 400 },
+      "controlPoint2": { "x": 300, "y": 200 },
+      "frameStart": 750,
+      "frameEnd": 870,
+      "style": {
+        "strokeColor": "#ff00ff",
+        "lineWidth": 3,
+        "glowColor": "rgba(255, 0, 255, 0.4)",
+        "animated": true,
+        "animationFrames": 48,
+        "arrowHeadFilled": true,
+        "lineDash": [10, 5]
+      }
+    },
+    {
+      "id": "feature_showcase",
+      "type": "terminal_text",
+      "content": "GIVE ENGINE FEATURES:\n---------------------\n> Object Tracking\n> Bezier Arrows\n> CRT Effects\n> AI Generation\n> Frame-precise Overlays",
+      "x": 400,
+      "y": 50,
+      "frameStart": 800,
+      "frameEnd": 1000,
+      "style": {
+        "fontSize": 13,
+        "color": "#00aaff",
+        "backgroundColor": "rgba(0, 0, 0, 0.95)",
+        "glowColor": "rgba(0, 170, 255, 0.2)",
+        "charsPerFrame": 0.6,
+        "typewriter": true,
+        "showCursor": true,
+        "padding": 12,
+        "borderColor": "#00aaff",
+        "borderWidth": 1
+      }
+    },
+    {
+      "id": "line_demo",
+      "type": "line",
+      "startPoint": { "x": 480, "y": 250 },
+      "endPoint": { "x": 600, "y": 150 },
+      "frameStart": 850,
+      "frameEnd": 950,
+      "style": {
+        "strokeColor": "#00ff00",
+        "lineWidth": 2,
+        "animated": true,
+        "animationFrames": 20,
+        "arrowHead": false
+      }
+    },
+    {
+      "id": "highlight_circle",
+      "type": "shape",
+      "shapeType": "circle",
+      "x": 280,
+      "y": 180,
+      "width": 100,
+      "height": 100,
+      "frameStart": 900,
+      "frameEnd": 1050,
+      "style": {
+        "strokeColor": "#ffff00",
+        "strokeWidth": 3,
+        "fillColor": "rgba(255, 255, 0, 0.1)",
+        "lineDash": [8, 4]
+      }
+    },
+    {
+      "id": "ai_powered_notice",
+      "type": "popup",
+      "content": "This editor supports AI-powered overlay generation! Press 'I' with a frame range selected to try it.",
+      "x": 150,
+      "y": 350,
+      "frameStart": 1000,
+      "frameEnd": 1200,
+      "pointer": { "x": 320, "y": 430 },
+      "style": {
+        "backgroundColor": "#00cc66",
+        "borderColor": "#008844",
+        "color": "#ffffff",
+        "fontSize": 13,
+        "padding": 12,
+        "maxWidth": 300
+      }
+    }
+  ],
+
+  "trackedObjects": [
+    {
+      "id": "nosferatu_shadow",
+      "startFrame": 2000,
+      "endFrame": 2200,
+      "keyframes": [
+        { "frame": 2000, "bounds": { "x": 100, "y": 200, "width": 80, "height": 120 } },
+        { "frame": 2100, "bounds": { "x": 300, "y": 180, "width": 90, "height": 140 } },
+        { "frame": 2200, "bounds": { "x": 500, "y": 160, "width": 100, "height": 160 } }
+      ]
     }
   ]
 }

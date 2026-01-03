@@ -731,3 +731,123 @@
     display: none;
   }
 }
+
+/* AI Status */
+.give-ai-status {
+  padding: 10px 15px;
+  margin-top: 15px;
+  background: var(--give-bg-dark);
+  border-radius: 4px;
+  color: var(--give-accent);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* AI Preview */
+.give-ai-preview {
+  margin-top: 15px;
+  background: var(--give-bg-dark);
+  border-radius: 4px;
+  padding: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.give-ai-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.give-ai-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--give-bg-medium);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.give-ai-preview-item .preview-type {
+  background: var(--give-accent);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.give-ai-preview-item .preview-content {
+  flex: 1;
+  color: var(--give-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.give-ai-preview-item .preview-frames {
+  color: var(--give-text-dim);
+  font-size: 11px;
+}
+
+.give-ai-preview-item button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.give-ai-preview-item .preview-edit {
+  background: var(--give-bg-light);
+  color: var(--give-text);
+}
+
+.give-ai-preview-item .preview-edit:hover {
+  background: var(--give-border);
+}
+
+.give-ai-preview-item .preview-remove {
+  background: #ff4444;
+  color: white;
+}
+
+.give-ai-preview-item .preview-remove:hover {
+  background: #ff6666;
+}
+
+.give-ai-preview-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: center;
+}
+
+.give-ai-add-btn,
+.give-ai-discard-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.give-ai-add-btn {
+  background: #00cc66;
+  color: white;
+}
+
+.give-ai-add-btn:hover {
+  background: #00dd77;
+}
+
+.give-ai-discard-btn {
+  background: var(--give-bg-light);
+  color: var(--give-text);
+}
+
+.give-ai-discard-btn:hover {
+  background: var(--give-border);
+}

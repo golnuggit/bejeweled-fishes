@@ -14,12 +14,82 @@
  *
  * // Trace an object outline
  * GIVE.outline([{x: 10, y: 10}, {x: 100, y: 10}, {x: 100, y: 100}, {x: 10, y: 100}], 50, 150);
+ *
+ * // AI-powered overlay generation
+ * await GIVE.ai("add arrows pointing to the center");
  */
 
+import { AIOverlayGenerator } from '../ai/AIOverlayGenerator.js';
+
 export class GIVEScript {
-  constructor(engine) {
+  constructor(engine, options = {}) {
     this.engine = engine;
     this.defaultDuration = 1; // seconds
+
+    // Initialize AI generator
+    this.aiGenerator = new AIOverlayGenerator({
+      apiKey: options.aiApiKey || null,
+      videoWidth: engine?.videoWidth || 640,
+      videoHeight: engine?.videoHeight || 480,
+      fps: engine?.config?.fps || 24
+    });
+  }
+
+  /**
+   * Generate overlays using AI from a natural language prompt
+   * @param {string} prompt - Natural language description
+   * @param {Object} options - Optional settings (frameStart, frameEnd, duration)
+   * @returns {Promise<Array>} Array of overlay IDs that were created
+   *
+   * @example
+   * // Generate arrow overlays
+   * await GIVE.ai("add arrows pointing to the fish");
+   *
+   * // Generate matrix text effect
+   * await GIVE.ai("matrix text rain effect", { duration: 5 });
+   *
+   * // Generate in specific frame range
+   * await GIVE.ai("add caption 'Hello'", { frameStart: 100, frameEnd: 200 });
+   */
+  async ai(prompt, options = {}) {
+    // Update context
+    if (this.engine) {
+      this.aiGenerator.setVideoContext(
+        this.engine.videoWidth,
+        this.engine.videoHeight,
+        this.engine.config.fps,
+        this.engine.currentFrame
+      );
+    }
+
+    // Parse frame range from options
+    let frameRange = null;
+    if (options.frameStart !== undefined && options.frameEnd !== undefined) {
+      frameRange = { start: options.frameStart, end: options.frameEnd };
+    } else if (options.duration) {
+      const startFrame = options.frameStart ?? this.engine?.currentFrame ?? 0;
+      frameRange = {
+        start: startFrame,
+        end: startFrame + this.secondsToFrames(options.duration)
+      };
+    }
+
+    try {
+      const overlays = await this.aiGenerator.generate(prompt, frameRange);
+      const ids = [];
+
+      for (const overlay of overlays) {
+        const id = this.engine.addOverlay(overlay);
+        ids.push(id);
+      }
+
+      console.log(`[GIVEScript] AI generated ${ids.length} overlay(s) from: "${prompt}"`);
+      return ids;
+
+    } catch (error) {
+      console.error('[GIVEScript] AI generation error:', error);
+      return [];
+    }
   }
 
   /**

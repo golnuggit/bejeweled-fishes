@@ -12,6 +12,7 @@
  */
 
 import { GIVEEngine } from '../engine/GIVEEngine.js';
+import { AIOverlayGenerator } from '../ai/AIOverlayGenerator.js';
 
 export class GIVEEditor {
   constructor(containerSelector, options = {}) {
@@ -55,6 +56,13 @@ export class GIVEEditor {
     this.showGrid = false;
     this.gridSize = 16;
     this.snapToGrid = false;
+
+    // AI Generator
+    this.aiGenerator = new AIOverlayGenerator({
+      apiKey: options.aiApiKey || null,
+      onStatusChange: (status, error) => this.handleAIStatusChange(status, error)
+    });
+    this.pendingOverlays = []; // Overlays awaiting user approval
 
     // Bind methods
     this.handleCanvasClick = this.handleCanvasClick.bind(this);
@@ -250,7 +258,7 @@ export class GIVEEditor {
               <div class="give-ai-prompt-group">
                 <label for="give-ai-prompt">Describe the overlay you want to create:</label>
                 <textarea id="give-ai-prompt" class="give-ai-prompt-input"
-                  placeholder="Examples:&#10;- Add a caption saying 'Hello World'&#10;- Highlight the object on the left side&#10;- Create a QTE prompt for the action scene&#10;- Add a spooky terminal message"></textarea>
+                  placeholder="Examples:&#10;- Add a caption saying 'Hello World'&#10;- Add arrows pointing right&#10;- Matrix text rain effect&#10;- Create a QTE to press X&#10;- Add scanline terminal text"></textarea>
               </div>
               <div class="give-ai-options">
                 <label>
@@ -258,6 +266,8 @@ export class GIVEEditor {
                   Use terminal text style
                 </label>
               </div>
+              <div class="give-ai-status" style="display:none;"></div>
+              <div class="give-ai-preview" style="display:none;"></div>
             </div>
             <div class="give-ai-modal-footer">
               <button class="give-ai-cancel-btn">Cancel</button>
@@ -645,9 +655,11 @@ export class GIVEEditor {
   /**
    * Handle AI Generate button click
    */
-  handleAIGenerate() {
+  async handleAIGenerate() {
     const promptInput = this.editorContainer.querySelector('.give-ai-prompt-input');
-    const useTerminalStyle = this.editorContainer.querySelector('.give-ai-terminal-style')?.checked;
+    const generateBtn = this.editorContainer.querySelector('.give-ai-generate-btn');
+    const previewArea = this.editorContainer.querySelector('.give-ai-preview');
+    const statusEl = this.editorContainer.querySelector('.give-ai-status');
 
     if (!promptInput || !promptInput.value.trim()) {
       alert('Please enter a prompt');
@@ -655,21 +667,181 @@ export class GIVEEditor {
     }
 
     const prompt = promptInput.value.trim();
-    const overlays = this.generateOverlayFromPrompt(prompt, this.selectedRange, useTerminalStyle);
 
-    // Add generated overlays
+    // Update AI generator context
+    if (this.engine) {
+      this.aiGenerator.setVideoContext(
+        this.engine.videoWidth,
+        this.engine.videoHeight,
+        this.engine.config.fps,
+        this.engine.currentFrame
+      );
+    }
+
+    // Show loading state
+    if (generateBtn) {
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generating...';
+    }
+    if (statusEl) {
+      statusEl.textContent = 'Analyzing prompt...';
+      statusEl.style.display = 'block';
+    }
+
+    try {
+      // Generate overlays
+      const overlays = await this.aiGenerator.generate(prompt, this.selectedRange);
+
+      if (overlays.length === 0) {
+        if (statusEl) statusEl.textContent = 'No overlays generated. Try a different prompt.';
+        return;
+      }
+
+      // Store pending overlays and show preview
+      this.pendingOverlays = overlays;
+      this.showOverlayPreview(overlays);
+
+      if (statusEl) statusEl.textContent = `Generated ${overlays.length} overlay(s). Click "Add to Project" to confirm.`;
+
+    } catch (error) {
+      console.error('[GIVE Editor] AI generation error:', error);
+      if (statusEl) statusEl.textContent = `Error: ${error.message}`;
+    } finally {
+      if (generateBtn) {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate';
+      }
+    }
+  }
+
+  /**
+   * Handle AI status changes
+   */
+  handleAIStatusChange(status, error) {
+    const statusEl = this.editorContainer?.querySelector('.give-ai-status');
+    if (!statusEl) return;
+
+    const messages = {
+      'parsing': 'Parsing prompt...',
+      'calling_api': 'Calling AI API...',
+      'fallback': 'Using local generation...',
+      'complete': 'Generation complete!',
+      'error': `Error: ${error || 'Unknown error'}`
+    };
+
+    statusEl.textContent = messages[status] || status;
+  }
+
+  /**
+   * Show preview of generated overlays
+   */
+  showOverlayPreview(overlays) {
+    const previewArea = this.editorContainer.querySelector('.give-ai-preview');
+    if (!previewArea) return;
+
+    previewArea.innerHTML = '';
+    previewArea.style.display = 'block';
+
+    const previewList = document.createElement('div');
+    previewList.className = 'give-ai-preview-list';
+
+    overlays.forEach((overlay, index) => {
+      const item = document.createElement('div');
+      item.className = 'give-ai-preview-item';
+      item.innerHTML = `
+        <span class="preview-type">${overlay.type}</span>
+        <span class="preview-content">${overlay.content?.slice(0, 30) || overlay.key || '...'}</span>
+        <span class="preview-frames">F${overlay.frameStart}-${overlay.frameEnd}</span>
+        <button class="preview-edit" data-index="${index}">Edit</button>
+        <button class="preview-remove" data-index="${index}">X</button>
+      `;
+      previewList.appendChild(item);
+    });
+
+    const buttonRow = document.createElement('div');
+    buttonRow.className = 'give-ai-preview-buttons';
+    buttonRow.innerHTML = `
+      <button class="give-ai-add-btn">Add to Project</button>
+      <button class="give-ai-discard-btn">Discard</button>
+    `;
+
+    previewArea.appendChild(previewList);
+    previewArea.appendChild(buttonRow);
+
+    // Add event listeners
+    previewArea.querySelector('.give-ai-add-btn')?.addEventListener('click', () => this.addPendingOverlays());
+    previewArea.querySelector('.give-ai-discard-btn')?.addEventListener('click', () => this.discardPendingOverlays());
+
+    previewList.querySelectorAll('.preview-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.index);
+        this.pendingOverlays.splice(idx, 1);
+        this.showOverlayPreview(this.pendingOverlays);
+      });
+    });
+
+    previewList.querySelectorAll('.preview-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.index);
+        this.editPendingOverlay(idx);
+      });
+    });
+  }
+
+  /**
+   * Add pending overlays to project
+   */
+  addPendingOverlays() {
+    if (this.pendingOverlays.length === 0) return;
+
     this.saveHistory();
-    for (const overlay of overlays) {
+    for (const overlay of this.pendingOverlays) {
       this.engine.addOverlay(overlay);
     }
+
     this.updateLayersList();
     this.renderTimeline();
 
-    // Clear prompt and close modal
-    promptInput.value = '';
-    this.hideAIModal();
+    console.log(`[GIVE Editor] Added ${this.pendingOverlays.length} overlay(s) from AI`);
 
-    console.log(`[GIVE Editor] Generated ${overlays.length} overlay(s) from AI prompt`);
+    // Clear and close
+    const promptInput = this.editorContainer.querySelector('.give-ai-prompt-input');
+    if (promptInput) promptInput.value = '';
+    this.pendingOverlays = [];
+    this.hideAIModal();
+  }
+
+  /**
+   * Discard pending overlays
+   */
+  discardPendingOverlays() {
+    this.pendingOverlays = [];
+    const previewArea = this.editorContainer.querySelector('.give-ai-preview');
+    if (previewArea) {
+      previewArea.style.display = 'none';
+      previewArea.innerHTML = '';
+    }
+  }
+
+  /**
+   * Edit a pending overlay
+   */
+  editPendingOverlay(index) {
+    const overlay = this.pendingOverlays[index];
+    if (!overlay) return;
+
+    // Simple JSON editor
+    const json = JSON.stringify(overlay, null, 2);
+    const newJson = prompt('Edit overlay JSON:', json);
+
+    if (newJson) {
+      try {
+        this.pendingOverlays[index] = JSON.parse(newJson);
+        this.showOverlayPreview(this.pendingOverlays);
+      } catch (e) {
+        alert('Invalid JSON: ' + e.message);
+      }
+    }
   }
 
   /**
